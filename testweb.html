@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MATIC Sender</title>
+  <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+</head>
+<body>
+  <h1>MATIC Sender</h1>
+
+  <div>
+    <p>Transaction Receipt:</p>
+    <pre id="receipt"></pre>
+  </div>
+
+  <script>
+    const web3 = new Web3('https://rpc-mumbai.maticvigil.com/');
+
+    // Set your private key and the recipient's address
+    const privateKey = '603e076894d6e5a3e72466c7021f250dd00f2149828623cdf9f4ad167dce079e';
+    const recipientAddress = '0x110E5AD2D2E8B8b3F7fD7959002616648fcA77e2';
+
+    // Convert the amount of Matic you want to send to Wei
+    const amountInMatic = 0.02;
+    const amountInWei = web3.utils.toWei(amountInMatic.toString(), 'ether');
+
+    async function sendMatic() {
+      // Create a new transaction object
+      const txObject = {
+        to: recipientAddress,
+        value: amountInWei,
+        gas: 5 // Replace with the appropriate gas limit for your transaction
+      };
+      
+      // Estimate the gas required for the transaction
+      const gasLimit = await web3.eth.estimateGas(txObject);
+      
+      // Set the gas limit for the transaction
+      txObject.gas = gasLimit;
+      
+      // Sign the transaction with your private key
+      const signedTx = await web3.eth.accounts.signTransaction(txObject, privateKey);
+      
+      // Send the signed transaction to the network
+      const txReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
+      // Display the transaction receipt on the web
+      document.getElementById('receipt').innerText = JSON.stringify(txReceipt, null, 2);
+    }
+
+    // Call the sendMatic function once and then set it to run every 5 minutes
+    async function run() {
+      await sendMatic();
+      setTimeout(run, 10000);
+    }
+    run();
+
+  </script>
+</body>
+</html>
